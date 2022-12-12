@@ -11,6 +11,8 @@ var myChart = echarts.init(chartDom);
 var myChart2 = echarts.init(chartDom2);
 var option: EChartsOption;
 
+const animationDuration = 2000;
+
 async function run(datas:{
     category: string[];
     times: string[];
@@ -46,8 +48,8 @@ async function run(datas:{
 		legend: {
 			show: true,
 		},
-		animationDuration: 2000,
-		animationDurationUpdate: 2000,
+		animationDuration: animationDuration,
+		animationDurationUpdate: animationDuration,
 		animationEasing: "linear",
 		animationEasingUpdate: "linear",
 	};
@@ -66,7 +68,8 @@ async function run(datas:{
 			],
 		});
 		time.innerHTML = times[i];
-		await sleep(2000);
+		await sleep(animationDuration);
+		await isStop();
 	}
 }
 
@@ -105,8 +108,8 @@ async function run2(datas:{
 		legend: {
 			show: true,
 		},
-		animationDuration: 2000,
-		animationDurationUpdate: 2000,
+		animationDuration: animationDuration,
+		animationDurationUpdate: animationDuration,
 		animationEasing: "linear",
 		animationEasingUpdate: "linear",
 	};
@@ -124,7 +127,8 @@ async function run2(datas:{
 				},
 			],
 		});
-		await sleep(2000);
+		await sleep(animationDuration);
+		await isStop();
 	}
 }
 
@@ -132,6 +136,34 @@ async function main() {
     let datas = await dealData();
     run(datas);
     run2(load(datas));
+}
+
+let stop = false;
+let stopCallback:Function[] = [];
+const stopFn = ()=>{
+	stop = !stop;
+	if (!stop) {
+		stopCallback.forEach((callback) => {
+			callback(true);
+		});
+		stopCallback = [];
+	}
+}
+document.getElementById("stop")!.addEventListener("click",stopFn);
+document.onkeydown=function(event){
+	console.log(event.code);
+	if(event.code === "Space"){
+		stopFn();
+	}
+}
+async function isStop() {
+	return new Promise((resolve) => {
+		if(!stop){
+			resolve(true);
+		}else{
+			stopCallback.push(resolve);
+		}
+	});
 }
 
 main();
